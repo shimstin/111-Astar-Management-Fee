@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<title>111호 관리비 정산기 V10.2</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--ink:#111827;--muted:#6b7280;--line:#e5e7eb;--soft:#f8fafc;--good:#166534;--warn:#9a6700}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(#eef2ff,#f5f7fb 260px);color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif}
+.wrap{max-width:760px;margin:auto;padding:16px 12px 70px}.hero{padding:22px;border-radius:24px;background:linear-gradient(135deg,#111827,#374151);color:white;box-shadow:0 18px 38px #1118272b}
+.hero small{opacity:.65;font-weight:800;letter-spacing:.08em}.hero h1{margin:6px 0 4px;font-size:25px}.hero p{margin:0 0 18px;font-size:13px;opacity:.7}
+.monthBox{background:#ffffff17;border:1px solid #ffffff24;border-radius:16px;padding:14px}.monthTitle{font-size:27px;font-weight:900;margin-bottom:10px}
+.card{background:var(--card);border:1px solid #e8ebf0;border-radius:20px;padding:18px;margin-top:12px;box-shadow:0 10px 28px #0f172a0d}
+.head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.head h2{margin:0;font-size:17px}.badge{padding:5px 8px;border-radius:999px;background:#eef2ff;color:#4338ca;font-size:11px;font-weight:800}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}.field label{display:block;margin-bottom:6px;font-size:12px;color:var(--muted);font-weight:750}
+input{width:100%;padding:13px;border:1px solid var(--line);border-radius:13px;font-size:16px;font-weight:650;color:var(--ink);background:white}input:focus{outline:0;border-color:#94a3b8;box-shadow:0 0 0 4px #94a3b829}
+.suffix{position:relative}.suffix input{padding-right:46px}.suffix span{position:absolute;right:13px;bottom:14px;font-size:12px;color:var(--muted);font-weight:700}
+.sep{height:1px;background:var(--line);margin:16px 0}.section{font-size:13px;font-weight:900;color:#374151;margin-bottom:9px}
+.periods,.results{display:grid;grid-template-columns:1fr 1fr;gap:11px}.period,.result{padding:14px;border-radius:15px;border:1px solid var(--line);background:var(--soft)}
+.period strong,.result h3{display:block;margin:0 0 7px;font-size:14px}.period div{font-size:13px;color:var(--muted);line-height:1.5}
+.help{margin-top:10px;padding:11px 12px;border-radius:12px;background:var(--soft);color:var(--muted);font-size:12px;line-height:1.55}
+.row{display:flex;justify-content:space-between;gap:14px;padding:7px 0;font-size:13px;color:#4b5563}.row strong{color:var(--ink)}.total{margin-top:6px;padding-top:11px;border-top:1px solid var(--line);font-size:17px;font-weight:900}
+.verify{margin-top:12px;padding:13px;border-radius:14px;background:var(--soft);border:1px solid var(--line);font-size:13px;line-height:1.55}.good{color:var(--good)}.warn{color:var(--warn)}
+details{margin-top:14px}summary{cursor:pointer;font-size:13px;font-weight:850}table{width:100%;border-collapse:collapse;margin-top:10px;font-size:12px}th,td{padding:8px 5px;border-bottom:1px solid var(--line);text-align:right}th:first-child,td:first-child{text-align:left}
+.sticky{position:sticky;bottom:9px;display:grid;grid-template-columns:1fr 1.35fr;gap:10px;margin-top:14px}button{padding:15px;border:0;border-radius:14px;font-size:14px;font-weight:900;box-shadow:0 8px 20px #1118271c}.secondary{background:white;border:1px solid var(--line)}.primary{background:#111827;color:white}
+
+
+
+
+
+.period-guide{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.period-guide .period{min-height:94px}
+.period-guide .period strong{color:var(--ink)}
+.period-kicker{font-size:11px;font-weight:900;color:#4f46e5;margin-bottom:5px}
+.photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.photo-box{border:1px dashed #cbd5e1;border-radius:16px;padding:13px;background:#fafafa}
+.photo-box h3{font-size:14px;margin:0 0 8px}
+.photo-input{display:none}
+.photo-btn{display:block;width:100%;text-align:center;padding:12px;border-radius:12px;background:#111827;color:#fff;font-size:13px;font-weight:900;cursor:pointer}
+.photo-preview{margin-top:10px;display:none}
+.photo-preview img{display:block;width:100%;max-height:230px;object-fit:contain;border-radius:12px;border:1px solid var(--line);background:#fff}
+.photo-actions{display:flex;gap:7px;margin-top:8px}
+.photo-actions button{flex:1;padding:9px;border-radius:10px;box-shadow:none;font-size:11px}
+.photo-meta{font-size:11px;color:var(--muted);margin-top:7px;line-height:1.45}
+.ocr-note{margin-top:8px;font-size:11px;color:var(--muted);line-height:1.5}
+@media(max-width:610px){.period-guide,.photo-grid{grid-template-columns:1fr}}
+
+.settings-details{margin-top:12px}
+.settings-details>summary{list-style:none;cursor:pointer;padding:12px 14px;border:1px solid var(--line);border-radius:13px;background:var(--soft);font-size:13px;font-weight:900;color:#374151}
+.settings-details>summary::-webkit-details-marker{display:none}
+.settings-details>summary::after{content:"＋";float:right;color:var(--muted)}
+.settings-details[open]>summary::after{content:"－"}
+.settings-inner{padding-top:2px}
+
+.main-layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:14px;align-items:start}
+.main-column{min-width:0}
+.history-panel{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto}
+.history-empty{padding:22px 10px;text-align:center;color:var(--muted);font-size:13px;line-height:1.6}
+.history-list{display:flex;flex-direction:column;gap:9px}
+.history-item{border:1px solid var(--line);border-radius:14px;padding:12px;background:var(--soft);transition:.15s ease}.history-item:hover{border-color:#c7d2fe;background:#f8faff}
+.history-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.history-month{font-size:14px;font-weight:900}
+.history-time{font-size:10px;color:var(--muted);margin-top:3px}
+.history-amount{font-size:16px;font-weight:900;text-align:right}
+.history-meta{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:9px;font-size:11px;color:var(--muted)}
+.history-actions{display:flex;gap:7px;margin-top:10px}
+.history-actions button{padding:8px 9px;border-radius:10px;box-shadow:none;font-size:11px;flex:1}
+.danger{background:#fff;color:#b91c1c;border:1px solid #fecaca}
+.mini{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.history-head-actions{display:flex;gap:6px}
+.history-head-actions button{padding:7px 9px;border-radius:10px;box-shadow:none;font-size:11px}
+@media(max-width:980px){.main-layout{grid-template-columns:1fr}.history-panel{position:static;max-height:none}}@media(max-width:610px){.grid,.grid3,.periods,.results{grid-template-columns:1fr}.hero{padding:19px}.card{padding:16px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<section class="hero">
+<small>111 MANAGEMENT FEE</small><h1>111호 관리비 정산기</h1>
+<p>고지서와 29도 계량값을 입력하면 월별 부담액과 계산 근거를 자동 정리합니다.</p>
+<div class="monthBox"><div id="monthDisplay" class="monthTitle">관리비 정산</div><div class="field"><label style="color:#ffffffb8">정산 대상 월</label><input id="billingMonth" type="month"></div></div>
+</section>
+<div class="card">
+  <div class="head"><h2>정산·검침 기간</h2><span class="badge">자동 표시</span></div>
+  <div class="period-guide">
+    <div class="period"><div class="period-kicker">관리비 부담기간</div><strong>뉴모모헤어샵</strong><div id="momoPeriodText">-</div><strong style="margin-top:7px">29도</strong><div id="d29PeriodText">-</div></div>
+    <div class="period"><div class="period-kicker">전기 검침기간</div><strong id="electricPeriodText">-</strong><div>전월 15일 ~ 당월 15일</div></div>
+    <div class="period"><div class="period-kicker">수도 검침기간</div><strong id="waterPeriodText">-</strong><div>전월 말일 ~ 당월 말일</div></div>
+  </div>
+  <div class="help">정산 대상 월만 선택하면 기간은 자동으로 표시됩니다. 면적 관련 항목은 뉴모모 50% / 29도 50%로 계산하며, 2026년 6월만 29도 입주일(6/9)을 반영해 일할 계산합니다.</div>
+</div>
+
+<div class="main-layout"><main class="main-column">
+<section class="card"><div class="head"><h2>정산 기간</h2><span class="badge">자동 저장</span></div>
+<div class="periods"><div class="period"><strong>뉴모모헤어샵</strong><div id="momoPeriodText"></div></div><div class="period"><strong>29도</strong><div id="d29PeriodText"></div></div></div>
+<div class="help">매달 고지서 항목과 전기·수도 계량값을 입력하면 됩니다. 면적 관련 항목은 50:50으로 고정 계산하며, 주차비는 각 가게 실제 부담액을 직접 입력합니다.</div>
+</section>
+
+
+<section class="card"><div class="head"><h2>이번 달 관리비 고지서</h2><span class="badge">고지서 입력</span></div>
+<div class="section">전기 사용량 기준</div><div class="grid"><div class="field suffix"><label>세대 전기료</label><input id="electricCharge" type="number"><span>원</span></div><div class="field suffix"><label>전력기금</label><input id="powerFund" type="number"><span>원</span></div></div>
+<div class="sep"></div><div class="section">수도 사용량 기준</div><div class="grid"><div class="field suffix"><label>세대 수도료</label><input id="waterCharge" type="number"><span>원</span></div></div>
+<div class="sep"></div><div class="section">면적 비율 기준</div><div class="grid">
+<div class="field suffix"><label>기본 전기료</label><input id="basicElectric" type="number"><span>원</span></div><div class="field suffix"><label>공용 전기료</label><input id="commonElectric" type="number"><span>원</span></div>
+<div class="field suffix"><label>일반관리비</label><input id="generalFee" type="number"><span>원</span></div><div class="field suffix"><label>청소비</label><input id="cleaningFee" type="number"><span>원</span></div>
+<div class="field suffix"><label>수선유지비</label><input id="repairFee" type="number"><span>원</span></div><div class="field suffix"><label>전산프로그램비</label><input id="programFee" type="number"><span>원</span></div>
+<div class="field suffix"><label>공용 수도료</label><input id="commonWater" type="number"><span>원</span></div><div class="field suffix"><label>화재보험료</label><input id="fireInsurance" type="number"><span>원</span></div>
+<div class="field suffix"><label>기타 면적 관리비</label><input id="otherAreaFee" type="number"><span>원</span></div></div>
+<div class="sep"></div><div class="section">주차비 · 각자 직접 입력</div>
+<div class="grid">
+  <div class="field suffix"><label>뉴모모 주차비</label><input id="momoParkingFee" type="number"><span>원</span></div>
+  <div class="field suffix"><label>29도 주차비</label><input id="d29ParkingFee" type="number"><span>원</span></div>
+</div>
+<div class="help"><strong>주차비는 면적 비율로 나누지 않고 실제 부담액을 각각 입력합니다.</strong><br>
+29도는 <strong>6/10 ~ 8/3 주차 이용분 지불</strong> 예정이라 7월·8월 관리비에도 일부 주차 요금이 추가될 수 있습니다. 8월 이후에는 당분간 29도 주차비를 부담하지 않을 예정입니다.</div>
+</section>
+
+<section class="card"><div class="head"><h2>전기 사용량 입력</h2><span class="badge">29도 기준</span></div>
+<div class="grid"><div class="field suffix"><label>111호 전체 사용량</label><input id="electricTotalUsage" type="number" step=".001"><span>kWh</span></div></div>
+<div class="sep"></div><div class="grid"><div class="field"><label>29도 시작 계량값</label><input id="e29Start" type="number" step=".1"></div><div class="field"><label>29도 종료 계량값</label><input id="e29End" type="number" step=".1"></div></div>
+<div class="help">29도 전기 사용량은 종료 값에서 시작 값을 뺀 값으로 계산합니다. 현재 사용량: <strong id="eUsageText">0kWh</strong></div></section>
+
+<section class="card"><div class="head"><h2>수도 사용량 입력</h2><span class="badge">29도 기준</span></div>
+<div class="grid"><div class="field suffix"><label>111호 전체 사용량</label><input id="waterTotalUsage" type="number" step=".001"><span>t</span></div></div>
+<div class="sep"></div><div class="grid"><div class="field"><label>29도 시작 계량값</label><input id="w29Start" type="number" step=".001"></div><div class="field"><label>29도 종료 계량값</label><input id="w29End" type="number" step=".001"></div></div>
+<div class="help">29도 수도 사용량은 종료 값에서 시작 값을 뺀 값으로 계산합니다.</div></section>
+
+
+<section class="card">
+  <div class="head"><h2>29도 계량기 사진 기록</h2><span class="badge">사진 저장</span></div>
+  <div class="photo-grid">
+    <div class="photo-box">
+      <h3>전기 계량기</h3>
+      <label class="photo-btn" for="electricPhoto">사진 촬영 · 선택</label>
+      <input id="electricPhoto" class="photo-input" type="file" accept="image/*" capture="environment">
+      <div id="electricPhotoPreview" class="photo-preview">
+        <img id="electricPhotoImg" alt="전기 계량기 사진 미리보기">
+        <div class="photo-actions">
+          <button id="electricOcrBtn" class="mini" type="button">숫자 읽기</button>
+          <button id="electricPhotoDelete" class="danger" type="button">사진 삭제</button>
+        </div>
+        <div id="electricPhotoMeta" class="photo-meta"></div>
+      </div>
+    </div>
+    <div class="photo-box">
+      <h3>수도 계량기</h3>
+      <label class="photo-btn" for="waterPhoto">사진 촬영 · 선택</label>
+      <input id="waterPhoto" class="photo-input" type="file" accept="image/*" capture="environment">
+      <div id="waterPhotoPreview" class="photo-preview">
+        <img id="waterPhotoImg" alt="수도 계량기 사진 미리보기">
+        <div class="photo-actions">
+          <button id="waterOcrBtn" class="mini" type="button">숫자 읽기</button>
+          <button id="waterPhotoDelete" class="danger" type="button">사진 삭제</button>
+        </div>
+        <div id="waterPhotoMeta" class="photo-meta"></div>
+      </div>
+    </div>
+  </div>
+  <div class="help">사진은 이 기기의 브라우저에 월별 기록과 함께 저장됩니다. 휴대폰에서 촬영하거나 앨범의 사진을 선택할 수 있습니다. <strong>숫자 읽기</strong>는 보조 기능이라 계량기 숫자는 저장 전에 한 번 확인해주세요.</div>
+</section>
+
+<section class="card"><div class="head"><h2>정산 결과</h2><span class="badge">자동 계산</span></div>
+<div class="results"><div class="result"><h3>뉴모모헤어샵</h3><div class="row"><span>전기</span><strong id="rMomoE"></strong></div><div class="row"><span>수도</span><strong id="rMomoW"></strong></div><div class="row"><span>면적 관리비</span><strong id="rMomoA"></strong></div><div class="row"><span>주차비</span><strong id="rMomoP"></strong></div><div class="row total"><span>합계</span><strong id="rMomoT"></strong></div></div>
+<div class="result"><h3>29도</h3><div class="row"><span>전기</span><strong id="r29E"></strong></div><div class="row"><span>수도</span><strong id="r29W"></strong></div><div class="row"><span>면적 관리비</span><strong id="r29A"></strong></div><div class="row"><span>주차비</span><strong id="r29P"></strong></div><div class="row total"><span>합계</span><strong id="r29T"></strong></div></div></div>
+<div id="previousTenantBox" class="result" style="display:none;margin-top:11px"><h3>6월 1일~8일 이전 세입자 몫</h3><div class="row"><span>면적 관리비</span><strong id="rPrevA"></strong></div><div class="row total"><span>합계</span><strong id="rPrevT"></strong></div></div>
+<div id="verifyBox" class="verify"></div><details><summary>계산 근거 자세히 보기</summary><div id="detailTable"></div></details>
+</section>
+
+<div class="sticky"><button id="resetBtn" class="secondary">입력 초기화</button><button id="copyBtn" class="primary">계산 근거까지 복사·기록</button></div>
+</main>
+<aside class="card history-panel">
+  <div class="head">
+    <h2>정산 기록</h2>
+    <div class="history-head-actions"><button id="clearHistoryBtn" class="danger">전체 삭제</button></div>
+  </div>
+  <div class="help" style="margin-top:0;margin-bottom:12px">복사 버튼을 누르면 계산 결과·계량값·관리비 입력값이 저장됩니다. 기록을 누르면 당시 값을 다시 불러올 수 있습니다.</div>
+  <div id="historyList" class="history-list"></div>
+</aside>
+</div>
+</div>
+
+<script>
+const ids=['billingMonth','electricCharge','powerFund','waterCharge','basicElectric','commonElectric','generalFee','cleaningFee','repairFee','programFee','commonWater','fireInsurance','otherAreaFee','momoParkingFee','d29ParkingFee','electricTotalUsage','e29Start','e29End','waterTotalUsage','w29Start','w29End'];
+const $=id=>document.getElementById(id), n=id=>Number($(id).value||0), won=v=>Math.round(v).toLocaleString('ko-KR')+'원';
+
+function days(a,b){if(!a||!b)return 0;return Math.max(0,Math.floor((new Date(b+'T00:00:00')-new Date(a+'T00:00:00'))/86400000)+1)}
+function bounds(v){if(!v)return{};const[y,m]=v.split('-').map(Number),last=new Date(y,m,0).getDate();return{y,m,start:`${y}-${String(m).padStart(2,'0')}-01`,end:`${y}-${String(m).padStart(2,'0')}-${String(last).padStart(2,'0')}`}}
+const MONTHLY_IDS=['electricCharge','powerFund','waterCharge','basicElectric','commonElectric','generalFee','cleaningFee','repairFee','programFee','commonWater','fireInsurance','otherAreaFee','momoParkingFee','d29ParkingFee','electricTotalUsage','e29Start','e29End','waterTotalUsage','w29Start','w29End'];
+const DRAFT_PREFIX='fee111-v9-draft-';
+
+function draftKey(month){return DRAFT_PREFIX+(month||'unknown')}
+let photoState={electric:'',water:'',electricName:'',waterName:''};
+
+function save(){
+  const month=$('billingMonth').value;
+  if(!month)return;
+  const data={};
+  MONTHLY_IDS.forEach(id=>data[id]=$(id).value);
+  data.photos=photoState;
+  localStorage.setItem(draftKey(month),JSON.stringify(data));
+}
+function loadMonthDraft(month){
+  let data={};
+  try{data=JSON.parse(localStorage.getItem(draftKey(month))||'{}')}catch(e){}
+  MONTHLY_IDS.forEach(id=>$(id).value=data[id]??'');
+  photoState=data.photos||{electric:'',water:'',electricName:'',waterName:''};
+  renderPhoto('electric');
+  renderPhoto('water');
+}
+function clearMonthlyFields(){
+  MONTHLY_IDS.forEach(id=>$(id).value='');
+  photoState={electric:'',water:'',electricName:'',waterName:''};
+  renderPhoto('electric');
+  renderPhoto('water');
+}
+
+
+function renderPhoto(type){
+ const data=photoState[type]||'';
+ const preview=$(type+'PhotoPreview'),img=$(type+'PhotoImg'),meta=$(type+'PhotoMeta');
+ if(!preview||!img)return;
+ if(data){
+   img.src=data; preview.style.display='block';
+   meta.textContent=(photoState[type+'Name']||'사진 저장됨')+' · 월별 기록에 함께 저장';
+ }else{
+   img.removeAttribute('src'); preview.style.display='none'; meta.textContent='';
+ }
+}
+function compressImage(file,maxWidth=1280,quality=.72){
+ return new Promise((resolve,reject)=>{
+   const reader=new FileReader();
+   reader.onload=()=>{
+     const img=new Image();
+     img.onload=()=>{
+       let w=img.width,h=img.height;
+       if(w>maxWidth){h=Math.round(h*maxWidth/w);w=maxWidth}
+       const c=document.createElement('canvas');c.width=w;c.height=h;
+       c.getContext('2d').drawImage(img,0,0,w,h);
+       resolve(c.toDataURL('image/jpeg',quality));
+     };
+     img.onerror=reject;img.src=reader.result;
+   };
+   reader.onerror=reject;reader.readAsDataURL(file);
+ });
+}
+async function handlePhoto(type,file){
+ if(!file)return;
+ try{
+   const data=await compressImage(file);
+   photoState[type]=data;
+   photoState[type+'Name']=file.name||'계량기 사진';
+   renderPhoto(type);save();
+ }catch(e){alert('사진을 저장하지 못했습니다. 다른 사진으로 다시 시도해주세요.')}
+}
+async function runOcr(type){
+ const data=photoState[type];
+ if(!data){alert('먼저 사진을 첨부해주세요.');return}
+ if(!window.Tesseract){alert('숫자 읽기 모듈을 불러오지 못했습니다. 인터넷 연결을 확인해주세요.');return}
+ const btn=$(type+'OcrBtn'), old=btn.textContent; btn.disabled=true;btn.textContent='읽는 중...';
+ try{
+   const result=await Tesseract.recognize(data,'eng',{logger:m=>{}});
+   const matches=(result.data.text||'').match(/\d+(?:\.\d+)?/g)||[];
+   if(!matches.length){alert('숫자를 찾지 못했습니다. 계량기 숫자를 직접 입력해주세요.');return}
+   const picked=matches.sort((a,b)=>b.length-a.length)[0];
+   const target=type==='electric'?'e29End':'w29End';
+   if(confirm(`사진에서 "${picked}" 값을 찾았습니다. 종료값에 입력할까요?`)){
+     $(target).value=picked;calc();
+   }
+ }catch(e){alert('숫자 읽기에 실패했습니다. 계량기 값을 직접 입력해주세요.')}
+ finally{btn.disabled=false;btn.textContent=old}
+}
+
+const HISTORY_KEY='fee111-history-v10';
+function getHistory(){try{return JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]')}catch(e){return[]}}
+function setHistory(items){localStorage.setItem(HISTORY_KEY,JSON.stringify(items));renderHistory()}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function renderHistory(){
+ const list=$('historyList'), items=getHistory();
+ if(!items.length){list.innerHTML='<div class="history-empty">아직 저장된 정산 기록이 없습니다.<br>계산 근거까지 복사하면 기록이 남습니다.</div>';return}
+ list.innerHTML=items.map(item=>`<div class="history-item">
+   <div class="history-top">
+     <div><div class="history-month">${escapeHtml(item.month)}</div><div class="history-time">${escapeHtml(item.savedAt)}</div></div>
+     <div><div class="history-amount">${won(item.d29Total)}</div><div class="history-time">29도 부담액</div></div>
+   </div>
+   <div class="history-meta">
+     <span>뉴모모 ${won(item.momoTotal)}</span><span>고지 ${won(item.billTotal)}</span>
+     <span>전기 ${item.eUsage}kWh</span><span>수도 ${item.wUsage}t</span>
+   </div>
+   <div class="history-actions">
+     <button class="mini" onclick="loadHistory('${item.id}')">불러오기</button>
+     <button class="mini" onclick="copyHistory('${item.id}')">복사</button>
+     <button class="danger" onclick="deleteHistory('${item.id}')">삭제</button>
+   </div>
+ </div>`).join('')
+}
+async function copyText(text,message='복사했습니다.'){
+ try{await navigator.clipboard.writeText(text);alert(message)}
+ catch(e){prompt('아래 내용을 복사하세요.',text)}
+}
+function deleteHistory(id){
+ if(!confirm('이 정산 기록을 삭제할까요?'))return;
+ setHistory(getHistory().filter(x=>x.id!==id))
+}
+function copyHistory(id){
+ const item=getHistory().find(x=>x.id===id);
+ if(item)copyText(item.text,'저장된 계산 근거를 복사했습니다.')
+}
+
+function loadHistory(id){
+ const item=getHistory().find(x=>x.id===id);
+ if(!item)return;
+ if(!item.inputs){
+   alert('이전 버전에서 저장된 기록이라 입력값을 불러올 수 없습니다. 계산 근거 복사는 가능합니다.');
+   return;
+ }
+ if(!confirm(`${item.month} 기록의 계량값과 관리비 입력값을 불러올까요? 현재 입력값은 덮어씁니다.`))return;
+ Object.entries(item.inputs).forEach(([key,value])=>{
+   if($(key)) $(key).value=value;
+ });
+ applyMonth();
+ calc();
+ window.scrollTo({top:0,behavior:'smooth'});
+ alert(`${item.month} 기록을 불러왔습니다.`);
+}
+function pad2(v){return String(v).padStart(2,'0')}
+function isoDate(y,m,d){return `${y}-${pad2(m)}-${pad2(d)}`}
+function prettyDate(v){
+  if(!v)return '-';
+  const [y,m,d]=v.split('-').map(Number);
+  return `${y}.${pad2(m)}.${pad2(d)}`;
+}
+function periodInfo(){
+ const b=bounds($('billingMonth').value);
+ if(!b.start)return null;
+ const prevDate=new Date(b.y,b.m-2,1);
+ const py=prevDate.getFullYear(), pm=prevDate.getMonth()+1;
+ const prevLast=new Date(b.y,b.m-1,0).getDate();
+ const currentLast=new Date(b.y,b.m,0).getDate();
+ const june=b.y===2026&&b.m===6;
+ return {
+   b,
+   momoStart:b.start,momoEnd:b.end,
+   d29Start:june?'2026-06-09':b.start,d29End:b.end,
+   electricStart:isoDate(py,pm,15),electricEnd:isoDate(b.y,b.m,15),
+   waterStart:isoDate(py,pm,prevLast),waterEnd:isoDate(b.y,b.m,currentLast)
+ };
+}
+function applyMonth(){
+ const p=periodInfo();
+ if(!p)return;
+ const {b}=p;
+ $('monthDisplay').textContent=`${b.y}년 ${b.m}월 관리비`;
+ $('momoPeriodText').textContent=`${prettyDate(p.momoStart)} ~ ${prettyDate(p.momoEnd)}`;
+ $('d29PeriodText').textContent=`${prettyDate(p.d29Start)} ~ ${prettyDate(p.d29End)}`;
+ $('electricPeriodText').textContent=`${prettyDate(p.electricStart)} ~ ${prettyDate(p.electricEnd)}`;
+ $('waterPeriodText').textContent=`${prettyDate(p.waterStart)} ~ ${prettyDate(p.waterEnd)}`;
+ const previousBox=$('previousTenantBox');
+ if(previousBox){
+   const showPrevious=(b.y===2026 && b.m===6);
+   previousBox.style.display=showPrevious?'block':'none';
+ }
+}
+function prop(m,p,t){return t>0?Math.round(m*p/t):0}
+function calc(){
+ const p=periodInfo(); if(!p)return {};
+ const b=p.b,td=days(b.start,b.end),md=days(p.momoStart,p.momoEnd),dd=days(p.d29Start,p.d29End),pd=Math.max(0,td-dd);
+ applyMonth();
+ const a29=0.5,am=0.5;
+ const area=['basicElectric','commonElectric','generalFee','cleaningFee','repairFee','programFee','commonWater','fireInsurance','otherAreaFee'].reduce((s,i)=>s+n(i),0);
+ const em=n('electricCharge')+n('powerFund'),eu=Math.max(0,n('e29End')-n('e29Start')),de=prop(em,eu,n('electricTotalUsage')),me=em-de;
+ const wm=n('waterCharge'),wu=Math.max(0,n('w29End')-n('w29Start')),dw=prop(wm,wu,n('waterTotalUsage')),mw=wm-dw;
+ const ma=td?Math.round(area*am*md/td):0,da=td?Math.round(area*a29*dd/td):0,pa=Math.max(0,area-ma-da);
+ const mp=n('momoParkingFee'),dp=n('d29ParkingFee'),pp=0;
+ const mt=me+mw+ma+mp,dt=de+dw+da+dp,pt=pa,bill=em+wm+area+mp+dp,alloc=mt+dt+pt,gap=bill-alloc;
+ const vals={rMomoE:me,rMomoW:mw,rMomoA:ma,rMomoP:mp,rMomoT:mt,r29E:de,r29W:dw,r29A:da,r29P:dp,r29T:dt,rPrevA:pa,rPrevT:pt};Object.entries(vals).forEach(([i,v])=>$(i).textContent=won(v));
+ $('eUsageText').textContent=`${eu.toLocaleString('ko-KR')}kWh`;
+ if($('previousTenantBox')){
+   $('previousTenantBox').style.display=(b.y===2026 && b.m===6 && pd>0)?'block':'none';
+ }
+ const er=n('electricTotalUsage')?eu/n('electricTotalUsage')*100:0,wr=n('waterTotalUsage')?wu/n('waterTotalUsage')*100:0;
+ const alerts=[];if(eu>n('electricTotalUsage'))alerts.push('29도 전기 사용량이 111호 전체 사용량보다 큽니다.');if(wu>n('waterTotalUsage'))alerts.push('29도 수도 사용량이 111호 전체 사용량보다 큽니다.');
+ $('verifyBox').className='verify '+(alerts.length?'warn':'good');$('verifyBox').innerHTML=alerts.length?`<strong>확인 필요</strong><br>${alerts.join('<br>')}`:`<strong>정산 완료</strong><br>고지 총액 ${won(bill)} · 계산 합계 ${won(alloc)} · 차액 ${won(gap)}`;
+ $('detailTable').innerHTML=`<table><tbody>
+<tr><td>29도 전기 사용량</td><td>${n('e29End')} - ${n('e29Start')} = ${eu}kWh</td></tr>
+<tr><td>29도 전기 비율</td><td>${eu} ÷ ${n('electricTotalUsage')} = ${er.toFixed(2)}%</td></tr>
+<tr><td>29도 전기 부담액</td><td>${won(em)} × ${er.toFixed(2)}% = ${won(de)}</td></tr>
+<tr><td>29도 수도 사용량</td><td>${n('w29End')} - ${n('w29Start')} = ${wu}t</td></tr>
+<tr><td>29도 수도 부담액</td><td>${won(dw)}</td></tr>
+<tr><td>뉴모모 면적 관리비</td><td>${won(area)} × 50% × ${md}/${td} = ${won(ma)}</td></tr>
+<tr><td>29도 면적 관리비</td><td>${won(area)} × 50% × ${dd}/${td} = ${won(da)}</td></tr>
+<tr><td>뉴모모 주차비</td><td>직접 입력 = ${won(mp)}</td></tr>
+<tr><td>29도 주차비</td><td>직접 입력 = ${won(dp)}</td></tr>
+</tbody></table>`;
+ save();return{b,td,md,dd,pd,eu,er,wu,wr,em,wm,area,me,mw,ma,mp,mt,de,dw,da,dp,dt,pa,pp,pt,bill,gap}
+}
+
+
+$('electricPhoto').addEventListener('change',e=>handlePhoto('electric',e.target.files[0]));
+$('waterPhoto').addEventListener('change',e=>handlePhoto('water',e.target.files[0]));
+$('electricPhotoDelete').onclick=()=>{photoState.electric='';photoState.electricName='';renderPhoto('electric');save()};
+$('waterPhotoDelete').onclick=()=>{photoState.water='';photoState.waterName='';renderPhoto('water');save()};
+$('electricOcrBtn').onclick=()=>runOcr('electric');
+$('waterOcrBtn').onclick=()=>runOcr('water');
+
+let currentMonth='';
+$('billingMonth').addEventListener('change',()=>{
+  const newMonth=$('billingMonth').value;
+  if($('previousTenantBox')) $('previousTenantBox').style.display='none';
+  if(currentMonth && currentMonth!==newMonth){
+    // Current month's edits were already autosaved by input handlers.
+  }
+  clearMonthlyFields();
+  applyMonth();
+  loadMonthDraft(newMonth);
+  applyMonth();
+  currentMonth=newMonth;
+  calc();
+});ids.filter(i=>i!=='billingMonth').forEach(i=>$(i).addEventListener('input',calc));
+$('resetBtn').onclick=()=>{
+ if(confirm('현재 선택한 달의 입력값을 모두 비울까요?')){
+   const month=$('billingMonth').value;
+   localStorage.removeItem(draftKey(month));
+   clearMonthlyFields();
+   applyMonth();
+   calc();
+ }
+};location.reload()}};
+function buildCopyText(r){return `[111호 관리비 정산]
+${$('monthDisplay').textContent}
+
+■ 계산 기간
+뉴모모헤어샵: ${prettyDate(periodInfo().momoStart)} ~ ${prettyDate(periodInfo().momoEnd)} (${r.md}일)
+29도: ${prettyDate(periodInfo().d29Start)} ~ ${prettyDate(periodInfo().d29End)} (${r.dd}일)
+전기 검침: ${prettyDate(periodInfo().electricStart)} ~ ${prettyDate(periodInfo().electricEnd)}
+수도 검침: ${prettyDate(periodInfo().waterStart)} ~ ${prettyDate(periodInfo().waterEnd)}
+
+■ 29도 계산 근거
+전기: ${n('e29End')} - ${n('e29Start')} = ${r.eu}kWh
+111호 전체 전기 사용량: ${n('electricTotalUsage')}kWh
+전기 사용비율: ${r.eu} ÷ ${n('electricTotalUsage')} = ${r.er.toFixed(2)}%
+전기 부담액: ${won(r.em)} × ${r.er.toFixed(2)}% = ${won(r.de)}
+수도: ${n('w29End')} - ${n('w29Start')} = ${r.wu}t
+111호 전체 수도 사용량: ${n('waterTotalUsage')}t
+수도 부담액: ${won(r.dw)}
+면적 관리비: ${won(r.area)} × 50% × ${r.dd}/${r.td} = ${won(r.da)}
+주차비: 직접 입력 = ${won(r.dp)}
+※ 29도 주차 참고: 6/10~8/3 이용분 지불 예정으로 7월·8월 관리비에도 일부 추가될 수 있음
+
+■ 최종 정산
+29도: 전기 ${won(r.de)} + 수도 ${won(r.dw)} + 면적관리비 ${won(r.da)} + 주차비 ${won(r.dp)}
+29도 합계: ${won(r.dt)}
+
+뉴모모헤어샵 합계: ${won(r.mt)}
+이전 세입자 몫: ${won(r.pt)}
+고지 총액: ${won(r.bill)}
+검산 차액: ${won(r.gap)}`}
+
+$('copyBtn').onclick=async()=>{
+ const r=calc(), text=buildCopyText(r);
+ const now=new Date();
+ const snapshot={};
+ MONTHLY_IDS.forEach(id=>snapshot[id]=$(id).value);
+ snapshot.photos=photoState;
+ const item={
+   id:String(Date.now()),
+   month:$('monthDisplay').textContent,
+   monthValue:$('billingMonth').value,
+   savedAt:now.toLocaleString('ko-KR'),
+   d29Total:r.dt,momoTotal:r.mt,billTotal:r.bill,
+   eUsage:r.eu,wUsage:r.wu,text,
+   inputs:snapshot
+ };
+ let items=getHistory();
+ const sameMonthIndex=items.findIndex(x=>x.monthValue===item.monthValue);
+ if(sameMonthIndex>=0){
+   const overwrite=confirm(`${item.month} 기록이 이미 있습니다. 기존 기록을 새 계산값으로 교체할까요?`);
+   if(overwrite) items.splice(sameMonthIndex,1);
+   else item.id=String(Date.now()+1);
+ }
+ items.unshift(item);
+ setHistory(items.slice(0,24));
+ await copyText(text,'계산 근거를 복사하고 정산 기록에 저장했습니다.')
+};
+$('clearHistoryBtn').onclick=()=>{
+ if(!getHistory().length)return;
+ if(confirm('저장된 정산 기록을 모두 삭제할까요?'))setHistory([])
+};
+(()=>{
+ const now=new Date();
+ const initial=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+ $('billingMonth').value=initial;
+ currentMonth=initial;
+ applyMonth();
+ loadMonthDraft(initial);
+ applyMonth();
+ calc();
+ renderHistory();
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script></body></html>
